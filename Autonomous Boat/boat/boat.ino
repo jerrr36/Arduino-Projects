@@ -1,12 +1,23 @@
+#include <TinyGPS++.h>
 #include <MPU9250.h>
+#include <Math.h>
+#include <Wire.h>
+#include <SoftwareSerial.h>
 
-#include <math.h>
-#include <wire.h>
-
-
+//Initializing hardware
 MPU9250 mpu;
+TinyGPSPlus tinyGPS;
 
 #define R 6371000
+
+void getGPS(){
+  
+
+  
+}
+
+
+
 
 
 void setup() {
