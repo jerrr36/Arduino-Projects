@@ -5,13 +5,13 @@
 
 WiFiClient client;
 
-String ssid = "SecretNinja007";
-String pwd = "I<3Tango";
+String ssid = "";
+String pwd = "";
 int thermoSO = 12;
 int thermoCS = 13;
 int thermoCLK = 14;
 
-MAX6675 tc(thermoSO, thermoCS, thermoCLK);
+MAX6675 tc(thermoCLK, thermoCS, thermoSO);
 
 void wifiConnect(String ssid, String pwd);
 void modbusSetup();
@@ -29,7 +29,7 @@ void setup(void){
   Serial.println('\n');
 
   wifiConnect(ssid, pwd);
-  //modbusSetup(); 
+  modbusSetup(); 
   delay(1000);
 }
 
@@ -97,8 +97,10 @@ int readTCP(){
 }
 void getTemp(){
   float t = tc.readCelsius();
-  Serial.println(t);
+  sendTemp(t);
+  //Serial.println(t);
 }
-void sendTemp(){
+void sendTemp(float t){
   
+  client.print(t);
 }
