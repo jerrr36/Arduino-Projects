@@ -8,6 +8,11 @@ import (
 func main() {
 	go blink()
 
+	//for loop keeps main() from ending this allows go routine to continue indefinitely
+	for {
+		time.Sleep(time.Millisecond * 1000)
+	}
+
 }
 
 func blink() {
@@ -26,5 +31,5 @@ func blink() {
 }
 
 func delay() {
-	time.Sleep(time.Millisecond * 10000)
+	time.Sleep(time.Millisecond * 1000)
 }
