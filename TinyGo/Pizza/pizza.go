@@ -12,7 +12,7 @@ type Timer struct {
 	button    machine.Pin
 }
 
-//button press method
+//function that scans for button press and starts appropriate timer
 func buttonPress(t Timer) {
 	//creating button
 	b := t.button
@@ -22,6 +22,8 @@ func buttonPress(t Timer) {
 
 		//getting bool value of button
 		val := b.Get()
+
+		//delay to allow both goroutines to function properly
 		time.Sleep(time.Millisecond * 50)
 
 		//condition to start timers
@@ -32,7 +34,7 @@ func buttonPress(t Timer) {
 	}
 }
 
-//Timer method
+//Timer function
 func pizzaTimer(t Timer) {
 
 	//configuring leds
