@@ -12,33 +12,43 @@ type Timer struct {
 	button    machine.Pin
 }
 
-func (t Timer) buttonPress() {
+//button press method
+func buttonPress(t Timer) {
+	//creating button
 	b := t.button
 	b.Configure(machine.PinConfig{Mode: machine.PinInput})
 
 	for {
+
+		//getting bool value of button
 		val := b.Get()
+		time.Sleep(time.Millisecond * 50)
+
+		//condition to start timers
 		if val == false {
-			t.pizzaTimer()
+			pizzaTimer(t)
+
 		}
 	}
 }
 
 //Timer method
-func (t Timer) pizzaTimer() {
+func pizzaTimer(t Timer) {
 
+	//configuring leds
 	l := t.timerOn
 	l.Configure(machine.PinConfig{Mode: machine.PinOutput})
 	l2 := t.timerDone
 	l2.Configure(machine.PinConfig{Mode: machine.PinOutput})
 
+	//leds on timers for baking and done
 	l.High()
 	time.Sleep(time.Second * 5)
 	l.Low()
 	l2.High()
 	time.Sleep(time.Second * 2)
 	l2.Low()
-	return
+
 }
 
 func main() {
@@ -46,8 +56,8 @@ func main() {
 	timer1 := Timer{machine.D2, machine.D3, machine.D4}
 	timer2 := Timer{machine.D5, machine.D6, machine.D7}
 
-	go timer1.buttonPress()
-	go timer2.buttonPress()
+	go buttonPress(timer1)
+	go buttonPress(timer2)
 
 	for {
 		time.Sleep(time.Millisecond * 1000)
