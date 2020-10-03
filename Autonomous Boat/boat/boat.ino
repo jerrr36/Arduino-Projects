@@ -48,7 +48,7 @@ float getGPS(lat1, lon1){
 
   //Calculating Bearing Angle
 
-  float x = math.cos(lat2) * sin(dLon);
+  float x = math.cos(lat2) * math.sin(dLon);
   float y = math.cos(lat1) * math.sin(lat2) - math.sin(lat1) * math.cos(lat2) * math.cos(dLon);
   float B = math.atan2(x, y) * 180 / PI;
 
