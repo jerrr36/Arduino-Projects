@@ -1,7 +1,6 @@
 package main
 
 import (
-	"max6675"
 	"time"
 )
 
