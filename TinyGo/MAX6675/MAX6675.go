@@ -21,7 +21,7 @@ func (d Device) Configure() {
 	d.CS.High()
 }
 func (d Device) spiRead() byte {
-	int i
+	var i int
 	byte d = 0
 	for i = 7; i >= 0; i-- {
 		d.SCK.Low()
@@ -36,7 +36,7 @@ func (d Device) spiRead() byte {
 	return d
 }
 func (d Device) readCelsius() float64 {
-	uint16 temp
+	var temp uint16
 	
 	d.CS.Low()
 	time.Sleep(time.Microsecond * 10)
