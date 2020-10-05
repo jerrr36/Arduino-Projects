@@ -2,11 +2,11 @@ package max6675
 
 import (
 	"machine"
+	"time"
 )
 
 //Device struct
 type Device struct {
-	
 	SCK machine.Pin
 	CS  machine.Pin
 	SO  machine.Pin
@@ -20,38 +20,42 @@ func (d Device) Configure() {
 
 	d.CS.High()
 }
-func (d Device) spiRead() byte {
+func (d Device) spiRead() uint16 {
 	var i int
-	byte d = 0
+	var b uint16 = 0
 	for i = 7; i >= 0; i-- {
 		d.SCK.Low()
 		time.Sleep(time.Microsecond * 10)
-		if (d.SO.Get()) {
-			d |= (1 << i)
+		if d.SO.Get() {
+			b |= (1 << i)
 		}
 		d.SCK.High()
 		time.Sleep(time.Microsecond * 10)
 	}
 
-	return d
+	return b
 }
-func (d Device) readCelsius() float64 {
+
+//ReadCelsius Function to get temp in celsius
+func (d Device) ReadCelsius() uint16 {
 	var temp uint16
-	
+
 	d.CS.Low()
 	time.Sleep(time.Microsecond * 10)
+
 	temp |= d.spiRead()
 	temp <<= 8
 	temp |= d.spiRead()
 
 	d.CS.High()
 
-	if temp & 0x4 {
-		return nil
+	if temp == 0x4 {
+		return 0
 	}
 
 	temp >>= 3
 
-	return temp * .25
+	//t := float64(temp) * .25
 
+	return temp
 }
