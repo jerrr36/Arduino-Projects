@@ -7,12 +7,14 @@ import (
 )
 
 func main() {
-	thermo := max6675.Device(machine.D52, machine.D53, machine.D50)
+	thermo := max6675.Device{machine.D52, machine.D53, machine.D50}
 	thermo.Configure()
 
 	for {
-		temp := thermo.readCelsius()
+		temp := thermo.ReadCelsius()
+
 		println(temp)
+
 		time.Sleep(time.Second * 1)
 	}
 
