@@ -64,3 +64,13 @@ func (d Device) ReadCelsius() uint16 {
 
 	return temp
 }
+
+//ReadFarhenheit calls ReadCelsius and converts to farhenheit
+func ReadFarhenheit() {
+	return ReadCelsius() * 9.0 / 5.0 + 32
+}
+
+//ReadKelvin calls ReadCelsius and converts to kelvin
+func ReadKelvin() {
+	return ReadCelsius() + 273.15
+}
