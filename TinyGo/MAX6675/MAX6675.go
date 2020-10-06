@@ -23,7 +23,9 @@ func (d Device) Configure() {
 
 	d.CS.High()
 }
-func (d Device) spiRead() uint16 {
+
+//SpiRead reads 8 bits from the max6675 chip
+func (d Device) SpiRead() uint16 {
 	var i int
 	var b uint16 = 0
 	for i = 7; i >= 0; i-- {
