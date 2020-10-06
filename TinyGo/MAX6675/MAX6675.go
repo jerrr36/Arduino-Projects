@@ -13,7 +13,7 @@ type Device struct {
 }
 
 
-//New creates a new 
+//New creates a new tc struct 
 func New(sck machine.Pin, cs machine.Pin, so machine.Pin) Device {
 	return Device{sck, cs, so}
 
