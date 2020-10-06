@@ -12,11 +12,14 @@ type Device struct {
 	SO  machine.Pin
 }
 
+
+//New creates a new 
+func New(sck machine.Pin, cs machine.Pin, so machine.Pin) Device {
+	return Device{sck, cs, so}
+
+}
 //Configure MAX6675
 func (d Device) Configure() {
-	d.SCK.Configure(machine.PinConfig{Mode: machine.PinOutput})
-	d.CS.Configure(machine.PinConfig{Mode: machine.PinOutput})
-	d.SO.Configure(machine.PinConfig{Mode: machine.PinInput})
 
 	d.CS.High()
 }
