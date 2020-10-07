@@ -3,6 +3,7 @@ package max6675
 import (
 	"machine"
 	"time"
+	"errors"
 )
 
 //Device struct
@@ -42,7 +43,7 @@ func (d Device) SpiRead() uint16 {
 }
 
 //ReadCelsius Function to get temp in celsius
-func (d Device) ReadCelsius() uint16 {
+func (d Device) ReadCelsius() (uint16, error) {
 	var temp uint16
 
 	d.CS.Low()
@@ -55,22 +56,26 @@ func (d Device) ReadCelsius() uint16 {
 	d.CS.High()
 
 	if temp == 0x4 {
-		return 0
+		err := "No thermocouple connected"
+		return 0, errors.New(err)
 	}
 
 	temp >>= 3
 
+	//Not working properly
 	//t := float64(temp) * .25
 
-	return temp
+	return temp, nil
 }
 
-//ReadFarhenheit calls ReadCelsius and converts to farhenheit
-func ReadFarhenheit() float64 {
-	return ReadCelsius() * 9.0 / 5.0 + 32
+//ReadFarhenheit calls ReadCelsius and converts to farhenheit. Need to fix float issue for it to work
+func ReadFarhenheit() (float64, error) {
+	t, err := ReadCelsius
+	return t * 9.0 / 5.0 + 32, err
 }
 
-//ReadKelvin calls ReadCelsius and converts to kelvin
-func ReadKelvin() float64 {
-	return ReadCelsius() + 273.15
+//ReadKelvin calls ReadCelsius and converts to kelvin. Need to fix float issue for it to work
+func ReadKelvin() (float64, error) {
+	t, err := ReadCelsius
+	return t + 273.15, err
 }
