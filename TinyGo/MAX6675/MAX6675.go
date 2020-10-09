@@ -13,6 +13,9 @@ type Device struct {
 	SO  machine.Pin
 }
 
+//Var for no thermocouple error
+var NOTC errors.New("No Thermocouple connected")
+
 
 //New creates a new tc struct 
 func New(sck machine.Pin, cs machine.Pin, so machine.Pin) Device {
@@ -25,8 +28,8 @@ func (d Device) Configure() {
 	d.CS.High()
 }
 
-//SpiRead reads 8 bits from the max6675 chip
-func (d Device) SpiRead() uint16 {
+//spiRead reads 8 bits from the max6675 chip. Not exported
+func (d Device) spiRead() uint16 {
 	var i int
 	var b uint16 = 0
 	for i = 7; i >= 0; i-- {
@@ -57,7 +60,7 @@ func (d Device) ReadCelsius() (uint16, error) {
 
 	if temp == 0x4 {
 		err := "No thermocouple connected"
-		return 0, errors.New(err)
+		return 0, NOTC
 	}
 
 	temp >>= 3
