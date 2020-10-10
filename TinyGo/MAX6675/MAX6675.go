@@ -14,7 +14,7 @@ type Device struct {
 }
 
 //Var for no thermocouple error
-var NOTC errors.New("No Thermocouple connected")
+NOTC := errors.New("No Thermocouple connected")
 
 
 //New creates a new tc struct 
@@ -23,13 +23,13 @@ func New(sck machine.Pin, cs machine.Pin, so machine.Pin) Device {
 
 }
 //Configure MAX6675
-func (d Device) Configure() {
+func (d *Device) Configure() {
 
 	d.CS.High()
 }
 
 //spiRead reads 8 bits from the max6675 chip. Not exported
-func (d Device) spiRead() uint16 {
+func (d *Device) spiRead() uint16 {
 	var i int
 	var b uint16 = 0
 	for i = 7; i >= 0; i-- {
@@ -46,7 +46,7 @@ func (d Device) spiRead() uint16 {
 }
 
 //ReadCelsius Function to get temp in celsius
-func (d Device) ReadCelsius() (uint16, error) {
+func (d *Device) ReadCelsius() (uint16, error) {
 	var temp uint16
 
 	d.CS.Low()
@@ -72,13 +72,13 @@ func (d Device) ReadCelsius() (uint16, error) {
 }
 
 //ReadFarhenheit calls ReadCelsius and converts to farhenheit. Need to fix float issue for it to work
-func ReadFarhenheit() (float64, error) {
-	t, err := ReadCelsius
+func (d *Device) ReadFarhenheit() (float64, error) {
+	t, err := d.ReadCelsius()
 	return t * 9.0 / 5.0 + 32, err
 }
 
 //ReadKelvin calls ReadCelsius and converts to kelvin. Need to fix float issue for it to work
-func ReadKelvin() (float64, error) {
-	t, err := ReadCelsius
+func (d *Device) ReadKelvin() (float64, error) {
+	t, err := d.ReadCelsius()
 	return t + 273.15, err
 }
