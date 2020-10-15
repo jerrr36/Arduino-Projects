@@ -36,18 +36,24 @@ void setup() {
       delay(5000);
     }
   }
+  client.setKeepAlive(2);
   pinMode(LED, OUTPUT);
 
 }
-
+unsigned long t = millis();
 void loop() {
   // put your main code here, to run repeatedly:
+  unsigned long t2 = millis();
   if (!client.connected()){
     reconnect();
   }
   client.loop();
-  client.publish("esp/test","request");
-  delay(2000);
+  if (t2 - t > 15000){
+    client.publish("esp/test","request");
+    t = millis();
+  }
+  
+  delay(1000);
 
 }
 
