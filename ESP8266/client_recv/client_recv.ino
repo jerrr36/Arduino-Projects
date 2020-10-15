@@ -3,8 +3,8 @@
 #define LED 2
 WiFiClient client;
 
-String ssid = "SecretNinja007";
-String pwd = "I<3Tango";
+String ssid = "";
+String pwd = "";
 
 void wifiConnect(String ssid, String pwd);
 void modbusSetup();
