@@ -45,40 +45,29 @@ func (d *Device) spiRead() uint16 {
 	return b
 }
 
-//ReadCelsius Function to get temp in celsius
-func (d *Device) ReadCelsius() (uint16, error) {
-	var temp uint16
+//ReadTemperature Function either returns the temperature in millidegrees of celsius or an error
+func (d *Device) ReadTemperature() (uint32, error) {
+	var data uint16
 
 	d.CS.Low()
 	time.Sleep(time.Microsecond * 10)
 
-	temp |= d.spiRead()
-	temp <<= 8
-	temp |= d.spiRead()
+	data |= d.spiRead()
+	data <<= 8
+	data |= d.spiRead()
 
 	d.CS.High()
 
-	if temp == 0x4 {
-		err := "No thermocouple connected"
+	if data == 0x4 {
+	
 		return 0, NOTC
 	}
 
-	temp >>= 3
+	data >>= 3
 
 	//Not working properly
-	//t := float64(temp) * .25
+	temp := uint32(data) * 250
 
 	return temp, nil
 }
 
-//ReadFarhenheit calls ReadCelsius and converts to farhenheit. Need to fix float issue for it to work
-func (d *Device) ReadFarhenheit() (float64, error) {
-	t, err := d.ReadCelsius()
-	return t * 9.0 / 5.0 + 32, err
-}
-
-//ReadKelvin calls ReadCelsius and converts to kelvin. Need to fix float issue for it to work
-func (d *Device) ReadKelvin() (float64, error) {
-	t, err := d.ReadCelsius()
-	return t + 273.15, err
-}
