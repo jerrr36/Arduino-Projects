@@ -26,7 +26,7 @@ void setup() {
   while(!client.connected()) {
     String clientid = "JSHESP8266";
     Serial.println("connecting to hivemq");
-    if (client.connect(clientid.c_str())) {
+    if (client.connect(clientid.c_str(),"username","password","esp/led",0,true,"last will")) {
       Serial.println("Connected");
       client.publish("esp/test","Hello");
       client.subscribe("esp/led");
