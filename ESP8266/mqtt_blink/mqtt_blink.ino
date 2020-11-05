@@ -48,7 +48,7 @@ void loop() {
     reconnect();
   }
   client.loop();
-  if (t2 - t > 15000){
+  if (t2 - t > 2000){
     client.publish("esp/test","request");
     t = millis();
   }
