@@ -3,7 +3,6 @@ package max6675
 import (
 	"machine"
 	"time"
-	"errors"
 )
 
 //Device struct
@@ -14,14 +13,15 @@ type Device struct {
 }
 
 //Var for no thermocouple error
-NOTC := errors.New("No Thermocouple connected")
 
+var d *Device
 
-//New creates a new tc struct 
+//New creates a new tc struct
 func New(sck machine.Pin, cs machine.Pin, so machine.Pin) Device {
 	return Device{sck, cs, so}
 
 }
+
 //Configure MAX6675
 func (d *Device) Configure() {
 
@@ -59,15 +59,13 @@ func (d *Device) ReadTemperature() (uint32, error) {
 	d.CS.High()
 
 	if data == 0x4 {
-	
-		return 0, NOTC
+
+		return 0, "No Thermocouple connected"
 	}
 
 	data >>= 3
 
-	//Not working properly
 	temp := uint32(data) * 250
 
 	return temp, nil
 }
-
