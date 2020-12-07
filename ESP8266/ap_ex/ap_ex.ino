@@ -30,6 +30,8 @@ void setup(void){
   toggle = false;
   Serial.println('\n');
 
+  SPIFFS.begin();
+  
   while (WiFi.softAP("esp", "jis#1son") == false){
     Serial.println("Initiating wifi");
     delay(5000);
