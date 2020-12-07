@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	thermo := max6675.New(machine.D13, machine.D10, machine.D12)
+	thermo := max6675.New(machine.D5, machine.D6, machine.D7)
 	thermo.Configure()
 
 	for {

@@ -1,6 +1,7 @@
 package max6675
 
 import (
+	"errors"
 	"machine"
 	"time"
 )
@@ -10,11 +11,8 @@ type Device struct {
 	SCK machine.Pin
 	CS  machine.Pin
 	SO  machine.Pin
+	notc error
 }
-
-//Var for no thermocouple error
-
-var d *Device
 
 //New creates a new tc struct
 func New(sck machine.Pin, cs machine.Pin, so machine.Pin) Device {
@@ -24,8 +22,11 @@ func New(sck machine.Pin, cs machine.Pin, so machine.Pin) Device {
 
 //Configure MAX6675
 func (d *Device) Configure() {
-
+	d.SCK.Configure(machine.PinConfig{Mode: machine.PinOutput})
+	d.CS.Configure(machine.PinConfig{Mode: machine.PinOutput})
+	d.SO.Configure(machine.PinConfig{Mode: machine.PinOutput})
 	d.CS.High()
+	d.notc := errors.new("No thermocouple connected")
 }
 
 //spiRead reads 8 bits from the max6675 chip. Not exported
@@ -60,10 +61,8 @@ func (d *Device) ReadTemperature() (uint32, error) {
 
 	if data == 0x4 {
 
-		return 0, "No Thermocouple connected"
+		return 0, d.notc
 	}
-
-	data >>= 3
 
 	temp := uint32(data) * 250
 
