@@ -1,3 +1,8 @@
+/*
+This library is a tinygo version of the Adafruit max6675 library
+https://github.com/adafruit/MAX6675-library
+*/
+
 package max6675
 
 import (
@@ -6,15 +11,17 @@ import (
 	"time"
 )
 
-//Device struct
+// Error for when no thermocouple is connected
+var errNoTC error = errors.New("No thermocouple is connected")
+
+// Device struct
 type Device struct {
 	SCK machine.Pin
 	CS  machine.Pin
 	SO  machine.Pin
-	notc error
 }
 
-//New creates a new tc struct
+// New creates a new tc struct
 func New(sck machine.Pin, cs machine.Pin, so machine.Pin) Device {
 	return Device{sck, cs, so}
 
@@ -26,7 +33,6 @@ func (d *Device) Configure() {
 	d.CS.Configure(machine.PinConfig{Mode: machine.PinOutput})
 	d.SO.Configure(machine.PinConfig{Mode: machine.PinOutput})
 	d.CS.High()
-	d.notc := errors.new("No thermocouple connected")
 }
 
 //spiRead reads 8 bits from the max6675 chip. Not exported
@@ -61,7 +67,7 @@ func (d *Device) ReadTemperature() (uint32, error) {
 
 	if data == 0x4 {
 
-		return 0, d.notc
+		return 0, errNoTC
 	}
 
 	temp := uint32(data) * 250
