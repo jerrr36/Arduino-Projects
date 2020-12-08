@@ -1,8 +1,9 @@
-/*
-This library is a tinygo version of the Adafruit max6675 library
-https://github.com/adafruit/MAX6675-library
-*/
-
+// Package max6675 implements a driver for the max6675 type k thermocouple to digital converter
+//
+// Datasheet: https://datasheets.maximintegrated.com/en/ds/MAX6675.pdf
+//
+// This library is a tinygo version of the Adafruit max6675 library
+// https://github.com/adafruit/MAX6675-library
 package max6675
 
 import (
