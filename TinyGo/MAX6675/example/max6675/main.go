@@ -11,11 +11,11 @@ func main() {
 	thermo.Configure()
 
 	for {
-		temp, err := thermo.ReadTemperature()
-		if err != nil {
+
+		if temp, err := thermo.ReadTemperature(); err != nil {
 			println(err)
 		} else {
-			//Off by factor of 4. Issue with floats
+
 			println(temp)
 		}
 
