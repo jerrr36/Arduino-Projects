@@ -1,6 +1,7 @@
 #include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 #include <ESP8266WiFi.h>
+#include <ESP8266mDNS.h>
 #include <FS.h>
 
 #define LED D0
@@ -28,8 +29,16 @@ void setup() {
 
   wifiConnect(ssid, pwd);
 
+  if (!MDNS.begin("esp8266")) {             // Start the mDNS responder for esp8266.local
+    Serial.println("Error setting up MDNS responder!");
+  }
+
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
     request->send(SPIFFS, "/index.html", String(), false, processor);
+  });
+
+  server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send(SPIFFS, "/style.css", "text/css");
   });
 
   server.on("/toggle", HTTP_GET, [](AsyncWebServerRequest *request){
@@ -51,8 +60,7 @@ void setup() {
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-
+  
 }
 
 void wifiConnect(String ssid, String pwd){

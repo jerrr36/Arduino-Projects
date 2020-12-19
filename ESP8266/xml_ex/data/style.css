@@ -1,0 +1,54 @@
+.body {
+  background-color: grey;
+  height: 100vh;
+}
+
+.article-container {
+  display: flex;
+  flex-direction: row;
+}
+
+
+.article {
+  flex: 1;
+  padding: 20px;
+  text-align:center;
+  height: 85vh;
+  
+  
+}
+.data-container {
+    flex: 1;
+}
+.datadisp {
+  text-align: center;
+  border: 3px solid white;
+  border-radius: 5px;
+  background-color: white;
+  height: 25vh;
+  width: 25vh;
+  margin: auto;
+
+}
+
+.temp-text {
+    font-size: large;
+}
+
+.header {
+  text-align: center;
+  padding: 10px 20px 0px 10px;
+}
+
+  
+}
+.button{
+  padding: 10px 10px 10px 10px;
+  margin: 10px;
+  background: #FAA;
+  
+  
+}
+.button-div{
+  padding: 30px 10px 0px 10px;
+}

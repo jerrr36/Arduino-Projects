@@ -1,34 +1,110 @@
 <html>
     <script>
     
-    setInterval(function() {
-        getTemp();
-    }, 500);
-    
-    
-    
+    // refreshes temperature value
     function getTemp() {
         var xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function() {
             if (this.readyState == 4 && this.status == 200) {
-                document.getElementById("tempValue").innerHTML =
-                this.responseText;
+                document.getElementById("tempValue").innerHTML = this.responseText;
              }
             }
             xhttp.open("GET","getTemp",true);
             xhttp.send();
     };
-      </script>
-    <body>
-        <h1>LED Control</h1>
-        <div>
-            <a href="/toggle"><button>%BUTTON%</button></a>
-        </div>
-        <div>
-            Temperature is: 
-            <span id="tempValue">
-                0
-            </span>
+
+    // runs refresh for temp over interval
+    
+    setInterval(function() {
+        getTemp();
+    }, 1000);
+    
+    
+    // starts timer
+    function startTimer(element) {
+        /*
+        var xhttp = new XMLHttpRequest();
+        xhttp.open("GET", "/startTimer?timer="+element.id);
+        xhttp.send();
+        */
+        var mins = document.getElementById("minutes"+element.id).value;
+        
+        if (mins == 1) {
+                document.getElementById("timerspan"+element.id).innerHTML = "Time Remaining: " + mins + " Minute";
+        }
+        else {
+                document.getElementById("timerspan"+element.id).innerHTML = "Time Remaining: " + mins + " Minutes";
+        }
+       
+        
+        var t = setInterval(function (){
+            mins--;
+            if (mins <= 0 ) {
+                clearInterval(t);
+                document.getElementById("timerspan"+element.id).innerHTML = "Done Baking!";
+            }
+            else if (mins == 1) {
+                document.getElementById("timerspan"+element.id).innerHTML = "Time Remaining: " + mins + " Minute";
+            }
+            else {
+                document.getElementById("timerspan"+element.id).innerHTML = "Time Remaining: " + mins + " Minutes";
+            }
+            
+                  
+        }, 60000);
+        }
+
+
+
+    </script>
+
+    <head>
+        <title>Jer's Oven</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" type="text/css" href="style.css">
+    </head>
+
+    
+
+    <body class="body">
+
+        <header>
+            <h1 class="header">Jer's Oven</h1>
+        </header>
+
+        <div class="article-container">
+            <div class="data-container">
+                <div class="datadisp">
+                    Temperature: 
+                    <br>
+                    <span id="tempValue" class="temp-text">
+    
+                    </span>
+                </div>
+            </div>
+
+            <div class="article">
+
+                <div>
+                        <form id="1" onsubmit="startTimer(this); return false;">
+                            <input type="number" id="minutes1" name="minutes" min="1" class="form-control" autofocus placeholder="Minutes">
+                            <button name="timer" class="btn btn-primary" type="submit">Start Timer</button>
+                        </form>
+                        
+
+                    <span id="timerspan1"></span> 
+                </div>
+                
+                <div>
+                        <form id="2" onsubmit="startTimer(this); return false;">
+                            <input type="number" id="minutes2" name="minutes" min="1" class="form-control" autofocus placeholder="Minutes">
+                            <button name="timer" class="btn btn-primary" type="submit">Start Timer</button>
+                        </form>
+                    <span id="timerspan2"></span>
+                </div>
+
+            </div>
+
         </div>
     </body>
 
