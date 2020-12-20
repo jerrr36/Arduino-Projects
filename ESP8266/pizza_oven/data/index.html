@@ -1,0 +1,160 @@
+<html>
+    <head>
+        <title>&#127829;</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" type="text/css" href="style.css">
+        <script src="https://code.highcharts.com/highcharts.js"></script>
+    </head>
+
+    <body class="body">
+
+        <header>
+            <h1 class="header">&#127829; Jer's Oven &#127829;</h1>
+        </header>
+
+        <div class="article-container">
+            <div class="data-container">
+                <div class="datadisp">
+                    <h3>Temperature:</h3> 
+                    
+                    <span id="tempValue" class="temp-text">
+    
+                    </span>
+                </div>
+            </div>
+
+            <div class="article">
+                
+                    <h3>Timers</h3>
+                <div class="form-div">
+                        <form id="1" onsubmit="startTimer(this); return false;">
+                            <input type="number" id="minutes1" name="minutes" min="1" class="form-control" autofocus placeholder="Minutes">
+                            <button name="timer" class="btn btn-primary" type="submit">Start Timer</button>
+                        </form>
+                        
+
+                    <span id="timerspan1"></span> 
+                </div>
+                
+                <div class="form-div">
+                        <form id="2" onsubmit="startTimer(this); return false;">
+                            <input type="number" id="minutes2" name="minutes" min="1" class="form-control" autofocus placeholder="Minutes">
+                            <button name="timer" class="btn btn-primary" type="submit">Start Timer</button>
+                        </form>
+                    <span id="timerspan2"></span>
+                </div>
+            
+            </div>
+
+             
+
+        </div>
+        <!-- temperature chart -->
+        <div id="chartTemp" class="tempChart"> </div>
+    </body>
+
+    <script>
+    
+        // randomnerdtutorials graph
+        var tempChart = new Highcharts.Chart({
+               chart: { renderTo: 'chartTemp',
+                        height: '300'},
+               title: { text: 'Oven Temperature'},
+               series: [{
+                   showInLegend: false,
+                   data:[]
+               }],
+               plotOptions: {
+                   line: { animation: false,
+                       dataLabels: { enabled: true }
+                   },
+                   series: { color: '#059e8a' }
+               },
+               xAxis: { type: 'datetime',
+                   dateTimeLabelFormats: { second: '%H:%M:%S' }
+               },
+               yAxis: {
+                   title: { text: 'Temperature (Fahrenheit)' }
+       
+               },
+               credits: { enabled: false }
+               });
+               
+   
+       // refreshes temperature value
+       function getTemp() {
+           var xhttp = new XMLHttpRequest();
+           xhttp.onreadystatechange = function() {
+               if (this.readyState == 4 && this.status == 200) {
+                   document.getElementById("tempValue").innerHTML = this.responseText; 
+   
+                   
+                   var x = (new Date()).getTime();
+                   var y = parseFloat(this.responseText);
+                  
+                   if(tempChart.series[0].data.length > 15) {
+                       tempChart.series[0].addPoint([x, y], true, true, true);
+                   } else {
+                       tempChart.series[0].addPoint([x, y], true, false, true);
+                   }
+                   
+                }
+               }
+           xhttp.open("GET","getTemp", true);
+           xhttp.send();
+       };
+   
+       // runs refresh for temp over interval
+       
+       setInterval(function () {
+           getTemp();
+       }, 1000);
+       
+       
+       // starts timer
+       function startTimer(element) {
+           
+           var xhttp = new XMLHttpRequest();
+           xhttp.open("GET", "/startTimer?timer="+element.id);
+           xhttp.send();
+           
+           var mins = document.getElementById("minutes"+element.id).value;
+           
+           if (mins == 1) {
+                   document.getElementById("timerspan"+element.id).innerHTML = "Time Remaining: " + mins + " Minute";
+           }
+           else {
+                   document.getElementById("timerspan"+element.id).innerHTML = "Time Remaining: " + mins + " Minutes";
+           }
+          
+           // count down timer set interval function
+           var t = setInterval(function (){
+               mins--;
+               // if the timer is at zero
+               if (mins <= 0 ) {
+                   clearInterval(t);
+   
+                   var xhttp = new XMLHttpRequest();
+                   xhttp.open("GET", "/stopTimer?timer="+element.id);
+                   xhttp.send();
+   
+                   document.getElementById("timerspan"+element.id).innerHTML = "Done Baking!";
+               }
+               // timer at 1 
+               else if (mins == 1) {
+                   document.getElementById("timerspan"+element.id).innerHTML = "Time Remaining: " + mins + " Minute";
+               }
+               // default
+               else {
+                   document.getElementById("timerspan"+element.id).innerHTML = "Time Remaining: " + mins + " Minutes";
+               }
+               
+                     
+           }, 60000);
+           };
+   
+          
+   
+       </script>
+
+</html>
