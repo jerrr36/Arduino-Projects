@@ -4,26 +4,30 @@
 #include <ESP8266mDNS.h>
 #include <FS.h>
 
-#define LED D0
+#define LED1 D0
+#define LED2 D4
 
 const char* ssid = "";
 const char* pwd = "";
-bool toggle = HIGH;
-String ledState;
+const char* timerParam = "timer";
 
 
 
 AsyncWebServer server(80);
 
 void wifiConnect(String ssid, String pwd);
-String processor(const String& var);
 long sendTemp();
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
-  pinMode(LED, OUTPUT);
-  digitalWrite(LED, toggle);
+
+  // Initializing leds
+  pinMode(LED1, OUTPUT);
+  digitalWrite(LED1, HIGH);
+
+  pinMode(LED2, OUTPUT);
+  digitalWrite(LED2, HIGH);
 
   SPIFFS.begin();
 
@@ -34,23 +38,60 @@ void setup() {
   }
 
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
-    request->send(SPIFFS, "/index.html", String(), false, processor);
+    request->send(SPIFFS, "/index.html", String(), false);
   });
 
   server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request){
     request->send(SPIFFS, "/style.css", "text/css");
   });
 
-  server.on("/toggle", HTTP_GET, [](AsyncWebServerRequest *request){
-    toggle = !toggle;
-    digitalWrite(LED, toggle);    
-    request->send(SPIFFS, "/index.html", String(), false, processor);
+  server.on("/startTimer", HTTP_GET, [](AsyncWebServerRequest *request){   
+    String timer;
+
+    // getting parameters from get request
+    if (request->hasParam(timerParam)) {
+      timer = request->getParam(timerParam)->value();
+      int t = timer.toInt();
+      if (t == 1) {
+        digitalWrite(LED1, LOW);
+        
+      }
+      else {
+        digitalWrite(LED2, LOW);
+      }
+      Serial.println(t);
+    }
+    else {
+      Serial.println("Issue with timer leds get request");
+    }
+    request->send(200, "text/plain", "OK");
   });
 
-  server.on("/getTemp", HTTP_GET, [](AsyncWebServerRequest *request){
+  // turning off led when timer is complete
+  server.on("/stopTimer", HTTP_GET, [](AsyncWebServerRequest *request){   
+    String timer;
+
+    // getting parameters from get request
+    if (request->hasParam(timerParam)) {
+      timer = request->getParam(timerParam)->value();
+      int t = timer.toInt();
+      if (t == 1) {
+        digitalWrite(LED1, HIGH);
+      }
+      else {
+        digitalWrite(LED2, HIGH);
+      }
+    }
+    else {
+      Serial.println("Issue with timer leds get request");
+    }
+    request->send(200, "text/plain", "OK");
+  });
+
+  server.on("/getTemp", HTTP_GET, [](AsyncWebServerRequest *request){   
     long t = sendTemp();
     char temp[50];
-    sprintf(temp,"%lu", t);
+    sprintf(temp, "%lu", t);
     
     request->send(200, "text/plain", temp);
   });
@@ -81,19 +122,6 @@ void wifiConnect(String ssid, String pwd){
   Serial.println(WiFi.localIP());           // Send the IP address of the ESP8266 to the computer 
 }
 
-String processor(const String& var){
-  //Serial.println(var);
-  if(var == "BUTTON"){
-    if(digitalRead(LED)){
-      ledState = "OFF";
-    }
-    else{
-      ledState = "ON";
-    }
-    return ledState;
-  }
-  return String();
-}
 long sendTemp() {
   long randN = random(1, 24);
 
