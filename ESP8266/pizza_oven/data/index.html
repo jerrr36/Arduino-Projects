@@ -88,7 +88,7 @@
                if (this.readyState == 4 && this.status == 200) {
                    document.getElementById("tempValue").innerHTML = this.responseText; 
    
-                   
+                   // getting datet and converting to est
                    var x = (new Date()).getTime();
                    var y = parseFloat(this.responseText);
                   

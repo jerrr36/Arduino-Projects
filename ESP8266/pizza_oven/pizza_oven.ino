@@ -119,7 +119,7 @@ void setup() {
 
   server.on("/getTemp", HTTP_GET, [](AsyncWebServerRequest *request){
     char temp[10];
-    sprintf(temp, "%f", getTemp());
+    sprintf(temp, "%.02f", getTemp());
     client.publish("jsh/oventemp", temp);   
     request->send(200, "text/plain", temp);
   });
