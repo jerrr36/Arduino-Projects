@@ -5,6 +5,12 @@
 #include <Arduino_LPS22HB.h>
 #include <Arduino_APDS9960.h>
 #include <Arduino_LSM9DS1.h>
+#include <PDM.h>
+
+// on board led
+#define RED 22     
+#define BLUE 24     
+#define GREEN 23
 
 
 // creating prototypes
@@ -16,13 +22,22 @@ void getProx(void);
 void getAccel(void);
 void getGyro(void);
 void getMag(void);
+void getGesture(void);
+void getSound(void);
+void onPDMdata(void);
+void runLEDS(void); // not working
 
-
-int r = 0, g = 0, b = 0;
+short sampleBuffer[256];
+volatile int samplesRead;
 
 void setup() {
   Serial.begin(9600);
   while (!Serial);
+
+  // setting up rgb led
+  pinMode(RED, OUTPUT);
+  pinMode(BLUE, OUTPUT);
+  pinMode(GREEN, OUTPUT);
 
   // starting temperature and humidity sensor
   if(!HTS.begin()) {
@@ -45,6 +60,14 @@ void setup() {
     while (1);
   }
 
+  // callback for receiving data
+  PDM.onReceive(onPDMdata);
+
+  // starting microphone
+  if(!PDM.begin(1, 16000)) {
+    Serial.println("Failed to start mic");
+    while(1);
+  }
   
 }
 
@@ -57,9 +80,13 @@ void loop() {
   //getGyro();
   //getMag();
   //getAccel();
-  delay(1000);
+  //getGesture();
+  //delay(10);
+  //getSound(); 
+  //runLEDS();
 }
 
+// get temperatuer
 void getTemp() {
   // getting temp
   float temp = HTS.readTemperature(FAHRENHEIT);
@@ -71,6 +98,7 @@ void getTemp() {
   
 }
 
+// get humidity
 void getHumid() {
   // getting humidity
   float humidity = HTS.readHumidity();
@@ -81,6 +109,7 @@ void getHumid() {
   Serial.println("%");
 }
 
+// get pressure
 void getPressure() {
   // reading pressure
   float pressure = BARO.readPressure(PSI);
@@ -91,6 +120,7 @@ void getPressure() {
   Serial.println(" psi");
 }
 
+// get color data
 void getColor() {
   int r, g, b;
   // seeing if color is available
@@ -107,6 +137,7 @@ void getColor() {
   }
 }
 
+// get distance
 void getProx() {
   // check if prox is available
   if (APDS.proximityAvailable()) {
@@ -118,6 +149,7 @@ void getProx() {
   } 
 }
 
+// get acceleration data
 void getAccel() {
   // x, y, z of acc
   float x, y, z;
@@ -136,6 +168,7 @@ void getAccel() {
   }
 }
 
+// get gyro data
 void getGyro() {
   // x, y, z gyro readings
   float x, y, z;
@@ -158,6 +191,7 @@ void getGyro() {
   }
 }
 
+// get mag reading
 void getMag() {
   // mag x, y, z
   float x, y, z;
@@ -176,4 +210,76 @@ void getMag() {
     Serial.print(" z: ");
     Serial.println(z);
   }
+}
+
+// checking gesture
+void getGesture() {
+  // check if a gesture reading is available
+  if (APDS.gestureAvailable()) {
+    int gesture = APDS.readGesture();
+    switch (gesture) {
+      case GESTURE_UP:
+        Serial.println("Detected UP gesture");
+        break;
+
+      case GESTURE_DOWN:
+        Serial.println("Detected DOWN gesture");
+        break;
+
+      case GESTURE_LEFT:
+        Serial.println("Detected LEFT gesture");
+        break;
+
+      case GESTURE_RIGHT:
+        Serial.println("Detected RIGHT gesture");
+        break;
+
+      default:
+        // ignore
+        break;
+    }
+  }
+}
+
+// getting mic data
+void getSound() {
+  // wait for samples to be read
+  if (samplesRead) {
+
+    // print samples to the serial monitor or plotter
+    for (int i = 0; i < samplesRead; i++) {
+      Serial.println(sampleBuffer[i]);
+    }
+
+    // clear the read count
+    samplesRead = 0;
+  }
+}
+
+// callback for mic
+void onPDMdata() {
+  // query the number of bytes available
+  int bytesAvailable = PDM.available();
+
+  // read into the sample buffer
+  PDM.read(sampleBuffer, bytesAvailable);
+
+  // 16-bit, 2 bytes per sample
+  samplesRead = bytesAvailable / 2;
+}
+
+// running rgb led
+void runLEDS() {
+  digitalWrite(RED, LOW); // turn the LED off by making the voltage LOW
+  delay(1000);            // wait for a second
+  digitalWrite(GREEN, LOW);
+  delay(1000);  
+  digitalWrite(BLUE, LOW);
+  delay(1000);  
+  digitalWrite(RED, HIGH); // turn the LED on (HIGH is the voltage level)
+  delay(1000);                         
+  digitalWrite(GREEN, HIGH);
+  delay(1000);  
+  digitalWrite(BLUE, HIGH);
+  delay(1000);
 }
