@@ -4,25 +4,43 @@
 #include <WiFiClientSecure.h>
 #include <PubSubClient.h>
 #include <TimeLib.h>
+#include <time.h>
 #include <NtpClientLib.h>
 #include "consts.h"
 
-void wifiConnect(String ssid, String pwd);
-void initMQTT(void);
-void onMessageCallback(void);
 
+// wifi and mqtt client
 WiFiClientSecure tlsClient;
 PubSubClient client(tlsClient);
 
+void onMessageCallback(char* topic, byte* payload, unsigned int length) {
+  Serial.print("Message arrived [");
+  Serial.print(topic);
+  Serial.print("] ");
+  for (unsigned int i = 0; i < length; i++) {
+    Serial.print((char)payload[i]);
+  }
+  Serial.println();
+}
 
+// function prototypes
+void wifiConnect(String ssid, String pwd);
+void initMQTT(void);
+void connectToIoTHub(void);
 
 void setup() {
   // put your setup code here, to run once:
-  wifiConnect(SSID, PWD);
+  Serial.begin(9600);
+  wifiConnect(WIFI_HOST, WIFI_PWD);
+  initMQTT();
+  connectToIoTHub();
+
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
+  client.publish("devices/plant-esp8266-1/messages/events/", "randNum:4");
+  delay(60000);
 }
 
 void wifiConnect(String ssid, String pwd){
@@ -43,13 +61,25 @@ void wifiConnect(String ssid, String pwd){
   Serial.println(WiFi.localIP());           // Send the IP address of the ESP8266 to the computer 
 }
 
-void onMessageCallback(){
-  return
-}
-
 void initMQTT()
 {
   tlsClient.setFingerprint(THUMBPRINT);
-  client.setServer(MQTT_HOST, MQTT_PORT);
+  client.setServer(MQTT_HOST, 8883);
   client.setCallback(onMessageCallback);
+}
+
+void connectToIoTHub() {
+  while (!client.connected()) {
+      Serial.print("Connecting to MQTT Server ... ");
+      if (client.connect(DEVICE_ID, MQTT_USER, MQTT_PASS)) {
+        Serial.println("connected.");
+        client.subscribe(MQTT_SUB_TOPIC);
+      } else {
+        Serial.print("failed, status code = ");
+        Serial.print(client.state());
+        Serial.println(". Try again in 5 seconds.");
+        /* Wait 5 seconds before retrying */
+        delay(5000);
+      }
+    }
 }
