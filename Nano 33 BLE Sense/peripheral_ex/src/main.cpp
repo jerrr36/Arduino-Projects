@@ -34,10 +34,7 @@ void setup() {
   Serial.begin(9600);
   while (!Serial);
 
-  // setting up rgb led
-  pinMode(RED, OUTPUT);
-  pinMode(BLUE, OUTPUT);
-  pinMode(GREEN, OUTPUT);
+  
 
   // starting temperature and humidity sensor
   if(!HTS.begin()) {
@@ -57,7 +54,10 @@ void setup() {
   // starting IMU
   if (!IMU.begin()) {
     Serial.println("Failed to initialize IMU!");
-    while (1);
+    while (1) {
+      Serial.print("...");
+      delay(1500);
+    }
   }
 
   // callback for receiving data
@@ -79,9 +79,9 @@ void loop() {
   //getProx();
   //getGyro();
   //getMag();
-  //getAccel();
+  getAccel();
   //getGesture();
-  //delay(10);
+  delay(10);
   //getSound(); 
   //runLEDS();
 }

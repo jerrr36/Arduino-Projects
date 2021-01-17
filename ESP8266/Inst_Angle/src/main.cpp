@@ -3,6 +3,8 @@
 
 #define LED 16
 
+void checkAngle(void);
+void getAccel(void);
 
 // scl -> d5
 // ado -> d6
@@ -36,13 +38,21 @@ void setup() {
     Serial.println(status);
     while(1) {}
   }
-
+  int cal = IMU.calibrateAccel();
+  if (!cal) {
+    Serial.println("cal failed");
+  }
   t1 = millis();
 }
 
 void loop() {
   // read the sensor
+  checkAngle();
+  //getAccel();
   
+}
+
+void checkAngle() {
   IMU.readSensor();
   reading = IMU.getGyroY_rads();
   if (reading < .0015 && reading > -.0015) {
@@ -60,4 +70,18 @@ void loop() {
 
   t1 = t2;
   Serial.println(angle);
+}
+
+void getAccel(void) {
+  IMU.readSensor();
+  float x = IMU.getAccelX_mss();
+  float y = IMU.getAccelY_mss();
+  float z = IMU.getAccelZ_mss();
+  Serial.print("X: ");
+  Serial.print(x);
+  Serial.print(" Y: ");
+  Serial.print(y);
+  Serial.print(" Z: ");
+  Serial.println(z);
+
 }
