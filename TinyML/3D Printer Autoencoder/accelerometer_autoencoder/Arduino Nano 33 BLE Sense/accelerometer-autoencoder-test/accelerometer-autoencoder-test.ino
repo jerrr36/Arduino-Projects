@@ -16,29 +16,29 @@ limitations under the License.
 
 #include <TensorFlowLite.h>
 #include "tensorflow/lite/micro/all_ops_resolver.h"
+#include "tensorflow/lite/micro/micro_mutable_op_resolver.h"
 #include "accel_model.h"
 #include "main_functions.h"
 #include "tensorflow/lite/micro/micro_error_reporter.h"
 #include "tensorflow/lite/micro/micro_interpreter.h"
 #include "tensorflow/lite/schema/schema_generated.h"
 #include "tensorflow/lite/version.h"
-#include <Arduino_LSM9DS1.h>
 
 // Globals, used for compatibility with Arduino-style sketches.
 namespace {
-tflite::ErrorReporter* error_reporter = nullptr;
-const tflite::Model* model = nullptr;
-tflite::MicroInterpreter* interpreter = nullptr;
-TfLiteTensor* input = nullptr;
-TfLiteTensor* output = nullptr;
+  tflite::ErrorReporter* error_reporter = nullptr;
+  const tflite::Model* model = nullptr;
+  tflite::MicroInterpreter* interpreter = nullptr;
+  TfLiteTensor* input = nullptr;
+  TfLiteTensor* output = nullptr;
 
-constexpr int kTensorArenaSize = 6000;
-uint8_t tensor_arena[kTensorArenaSize];
+  constexpr int kTensorArenaSize = 80 * 1024;
+  uint8_t tensor_arena[kTensorArenaSize];
+}
 
-float accelData[3], accelSum[3];
-float initSum, finalSum, diff;
-int count = 0;
-}  // namespace
+
+
+
 
 // The name of this function is important for Arduino compatibility.
 void setup() {
@@ -59,7 +59,7 @@ void setup() {
     return;
   }
 
-  // micro mutable op resolver causes mbed os to crash at interpreter.invoke()
+  // Loading only the necessary ops
   /*
   tflite::MicroMutableOpResolver<2> micro_op_resolver; // NOLINT
   micro_op_resolver.AddFullyConnected();
@@ -83,67 +83,40 @@ void setup() {
   input = interpreter->input(0);
   output = interpreter->output(0);
 
-  // Starting IMU
-  if (!IMU.begin()) {
-    TF_LITE_REPORT_ERROR(error_reporter, "IMU did not begin");
-    return;
+  for (int i = 0; i < 20; i++) {
+    TF_LITE_REPORT_ERROR(error_reporter, "Giving time to monitor");
+    delay(1000);
   }
 
-  // Setting built in led
-  pinMode(24, OUTPUT);
-  
 }
 
 // The name of this function is important for Arduino compatibility.
 void loop() {
-  if (IMU.accelerationAvailable()) {
-    
-    IMU.readAcceleration(accelData[0], accelData[1], accelData[2]);
+   //TF_LITE_REPORT_ERROR(error_reporter, "Input Size: %d First layer: %d Second Layer: %d\n", input->dims->size, input->dims->data[0], input->dims->data[1]);
 
-    for (int i = 0; i < 3; i++) {
-      accelSum[i] += accelData[i];
-    }
+   float x = -0.10, y = x, z = 1.0;
 
-    count += 1;
+   input->data.f[0] = x;
+   input->data.f[1] = y;  
+   input->data.f[2] = z; 
+   
+   TF_LITE_REPORT_ERROR(error_reporter, "x: %f y: %f z: %f\n", input->data.f[0], input->data.f[1], input->data.f[2]);
 
-    // If we have fine datapoints
-    if (count == 5) {
-      // Writing to input tensor
-      for (int i = 0; i < 3; i++) {
-         input->data.f[i] = accelSum[i]/5;
-         initSum += accelSum[i];
-      }
+  
 
-      // Run inference, and report any error
-      TfLiteStatus invoke_status = interpreter->Invoke();
-      if (invoke_status != kTfLiteOk) {
-        TF_LITE_REPORT_ERROR(error_reporter, "Invoke failed on data: %f, %f, %f \n", accelSum[0], accelSum[1], accelSum[2]);
-        return;
-      }
-      
-      for (int i = 0; i < 3; i++) {
-        finalSum += output->data.f[i];
-        accelSum[i] = 0;
-      }
-
-      // calculating percent difference
-      diff = abs(initSum - finalSum) / abs(initSum);
-
-      if (diff > .8) {
-        TF_LITE_REPORT_ERROR(error_reporter, "Diff: %f", diff);
-        pinMode(24, HIGH);
-        delay(3000);
-        pinMode(24, LOW);
-      }
-
-
-      // resetting variables for next iteration
-      initSum = 0;
-      finalSum = 0;
-      count = 0;
-
-    }
+  
+  // Run inference, and report any error
+  TfLiteStatus invoke_status = interpreter->Invoke();
+  /*
+  if (invoke_status != kTfLiteOk) {
+    TF_LITE_REPORT_ERROR(error_reporter, "Invoke failed");
     
   }
+  */
+      
+  TF_LITE_REPORT_ERROR(error_reporter, "x2: %f y2: %f z2: %f", output->data.f[0], output->data.f[1], output->data.f[2]);
+  
+  delay(1000);
+  //*/
   
 }

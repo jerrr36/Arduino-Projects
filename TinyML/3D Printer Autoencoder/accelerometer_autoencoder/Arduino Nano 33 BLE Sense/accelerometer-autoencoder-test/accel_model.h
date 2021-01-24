@@ -8,7 +8,7 @@
 #ifndef TENSORFLOW_LITE_MICRO_ACCELEROMETER_AUTOENCODER_MODEL_H_
 #define TENSORFLOW_LITE_MICRO_ACCELEROMETER_AUTOENCODER_MODEL_H_
 
-extern unsigned char accel_model[];
+extern const unsigned char accel_model[];
 extern const int accel_model_len;
 
 #endif  // TENSORFLOW_LITE_MICRO_EXAMPLES_HELLO_WORLD_MODEL_H_
