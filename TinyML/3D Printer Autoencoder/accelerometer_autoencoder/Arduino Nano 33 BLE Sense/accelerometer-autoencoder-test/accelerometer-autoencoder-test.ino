@@ -16,13 +16,13 @@ limitations under the License.
 
 #include <TensorFlowLite.h>
 #include "tensorflow/lite/micro/all_ops_resolver.h"
-#include "tensorflow/lite/micro/micro_mutable_op_resolver.h"
 #include "accel_model.h"
 #include "main_functions.h"
 #include "tensorflow/lite/micro/micro_error_reporter.h"
 #include "tensorflow/lite/micro/micro_interpreter.h"
 #include "tensorflow/lite/schema/schema_generated.h"
 #include "tensorflow/lite/version.h"
+#include <Arduino_LSM9DS1.h>
 
 // Globals, used for compatibility with Arduino-style sketches.
 namespace {
@@ -32,8 +32,11 @@ namespace {
   TfLiteTensor* input = nullptr;
   TfLiteTensor* output = nullptr;
 
-  constexpr int kTensorArenaSize = 80 * 1024;
+  constexpr int kTensorArenaSize = 2800;
   uint8_t tensor_arena[kTensorArenaSize];
+
+  float numSamples = 5;
+  float xSum, ySum, zSum, x, y, z, initSum, finalSum, loss;
 }
 
 
@@ -59,12 +62,8 @@ void setup() {
     return;
   }
 
-  // Loading only the necessary ops
-  /*
-  tflite::MicroMutableOpResolver<2> micro_op_resolver; // NOLINT
-  micro_op_resolver.AddFullyConnected();
-  micro_op_resolver.AddTanh();
-  */
+  // Loading all ops
+  // unfortunately micro mutable ops breaks mbed os
   static tflite::AllOpsResolver resolver;
 
   // Build an interpreter to run the model with.
@@ -83,40 +82,79 @@ void setup() {
   input = interpreter->input(0);
   output = interpreter->output(0);
 
-  for (int i = 0; i < 20; i++) {
-    TF_LITE_REPORT_ERROR(error_reporter, "Giving time to monitor");
-    delay(1000);
+
+  // Initializing imu
+  if (!IMU.begin()) {
+    while (1);
   }
 
+  IMU.setContinuousMode();
+
+  TF_LITE_REPORT_ERROR(error_reporter, "Sample Rate: %f", IMU.accelerationSampleRate());
+
+
+  pinMode(22, OUTPUT);
 }
 
 // The name of this function is important for Arduino compatibility.
 void loop() {
    //TF_LITE_REPORT_ERROR(error_reporter, "Input Size: %d First layer: %d Second Layer: %d\n", input->dims->size, input->dims->data[0], input->dims->data[1]);
+   long t1, t2, delta;
+   for (int i = 0; i < numSamples; i++) {
 
-   float x = -0.10, y = x, z = 1.0;
+    // loop until data is available
+    while (!IMU.accelerationAvailable());
 
-   input->data.f[0] = x;
-   input->data.f[1] = y;  
-   input->data.f[2] = z; 
+    IMU.readAcceleration(x, y, z);
+
+    // updating sum
+    xSum += x;
+    ySum += y;
+    zSum += z;
+    
+   }
+
+   initSum = xSum / numSamples + ySum / numSamples + zSum / numSamples;
+   // TF_LITE_REPORT_ERROR(error_reporter, "Initial Sum: %f", initSum);
    
-   TF_LITE_REPORT_ERROR(error_reporter, "x: %f y: %f z: %f\n", input->data.f[0], input->data.f[1], input->data.f[2]);
+   // Inputting data into input tensor
+   input->data.f[0] = xSum / numSamples;
+   input->data.f[1] = ySum / numSamples;  
+   input->data.f[2] = zSum / numSamples; 
 
-  
+   xSum = 0;
+   ySum = 0;
+   zSum = 0;
 
+   //TF_LITE_REPORT_ERROR(error_reporter, "x: %f y: %f z: %f", input->data.f[0], input->data.f[1], input->data.f[2]);
   
   // Run inference, and report any error
   TfLiteStatus invoke_status = interpreter->Invoke();
-  /*
+  
   if (invoke_status != kTfLiteOk) {
     TF_LITE_REPORT_ERROR(error_reporter, "Invoke failed");
     
   }
-  */
-      
-  TF_LITE_REPORT_ERROR(error_reporter, "x2: %f y2: %f z2: %f", output->data.f[0], output->data.f[1], output->data.f[2]);
   
-  delay(1000);
-  //*/
+      
+  //TF_LITE_REPORT_ERROR(error_reporter, "x2: %f y2: %f z2: %f", output->data.f[0], output->data.f[1], output->data.f[2]);
+
+  finalSum = output->data.f[0] + output->data.f[1] + output->data.f[2];
+
+  // TF_LITE_REPORT_ERROR(error_reporter, "Final Sum: %f", finalSum);
+
+  loss = abs(initSum - finalSum);
+  
+  //TF_LITE_REPORT_ERROR(error_reporter, "Loss: %f", loss);
+
+  if (loss > .1) {
+    digitalWrite(22, LOW);
+    TF_LITE_REPORT_ERROR(error_reporter, "Loss is greater than threshhold");
+  }
+  else {
+    digitalWrite(22, HIGH);
+    TF_LITE_REPORT_ERROR(error_reporter, "Loss is less than threshhold");
+  }
+
   
 }
