@@ -52,6 +52,8 @@ void loop() {
   
 }
 
+
+// checks angle of instrument
 void checkAngle() {
   IMU.readSensor();
   reading = IMU.getGyroY_rads();

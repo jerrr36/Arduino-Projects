@@ -90,7 +90,7 @@ void setup() {
 
   IMU.setContinuousMode();
 
-  TF_LITE_REPORT_ERROR(error_reporter, "Sample Rate: %f", IMU.accelerationSampleRate());
+  //TF_LITE_REPORT_ERROR(error_reporter, "Sample Rate: %f", IMU.accelerationSampleRate());
 
 
   pinMode(22, OUTPUT);
@@ -149,11 +149,16 @@ void loop() {
 
   if (loss > .1) {
     digitalWrite(22, LOW);
-    TF_LITE_REPORT_ERROR(error_reporter, "Loss is greater than threshhold");
+    //TF_LITE_REPORT_ERROR(error_reporter, "Loss is greater than threshhold");
+    //TF_LITE_REPORT_ERROR(error_reporter, "x: %f y: %f z: %f", input->data.f[0], input->data.f[1], input->data.f[2]);
+    //TF_LITE_REPORT_ERROR(error_reporter, "x2: %f y2: %f z2: %f", output->data.f[0], output->data.f[1], output->data.f[2]);
+    TF_LITE_REPORT_ERROR(error_reporter, "Loss: %f\n", loss);
+    
+    
   }
   else {
     digitalWrite(22, HIGH);
-    TF_LITE_REPORT_ERROR(error_reporter, "Loss is less than threshhold");
+    //TF_LITE_REPORT_ERROR(error_reporter, "Loss is less than threshhold");
   }
 
   
